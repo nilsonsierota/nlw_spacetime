@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { ImageBackground, View, Text, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -48,6 +48,18 @@ export default function App() {
     discovery,
   )
 
+  async function handleGithubOAuthCode(code: string) {
+    const response = await api.post('/register', {
+      code,
+    })
+
+    const { token } = response.data
+
+    await SecureStore.setItemAsync('token', token)
+
+    router.push('/memories')
+  }
+
   useEffect(() => {
     // pegar url de callback pro OAuth Github
     // console.log(
@@ -58,24 +70,12 @@ export default function App() {
     // mostra o code do OAuth Github
     // console.log(response)
 
-    async function handleGithubOAuthCode(code: string) {
-      const response = await api.post('/register', {
-        code,
-      })
-
-      const { token } = response.data
-
-      await SecureStore.setItemAsync('token', token)
-
-      router.push('/memories')
-    }
-
     if (response?.type === 'success') {
       const { code } = response.params
 
       handleGithubOAuthCode(code)
     }
-  }, [response, router])
+  }, [response])
 
   if (!fontsLoaded) {
     return null
